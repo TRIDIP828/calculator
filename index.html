@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Scientific Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #0a0a0a, #3a4452);
+        }
+        
+        .calculator {
+            width: 340px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .calculator::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .calculator::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .calculator::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        .display {
+            position: relative;
+            height: 80px;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            text-align: right;
+            overflow-y: auto;
+            font-size: 2em;
+            transition: all 0.3s ease;
+        }
+        
+        .display::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .display::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .display::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+        
+        .history {
+            height: 60px;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: #ccc;
+            text-align: right;
+            overflow-y: auto;
+            font-size: 1em;
+        }
+        
+        .history::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .history::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .history::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+        
+        .buttons button {
+            position: relative;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .buttons button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .buttons button:active {
+            transform: translateY(0);
+        }
+        
+        .operator {
+            color: #ff9f0a !important;
+        }
+        
+        .function {
+            color: #64d2ff !important;
+        }
+        
+        .equals {
+            background: rgba(255, 159, 10, 0.5) !important;
+        }
+        
+        .equals:hover {
+            background: rgba(255, 159, 10, 0.7) !important;
+        }
+        
+        .clear, .backspace {
+            color: #ff375f !important;
+        }
+        
+        .mode-toggle {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .mode-toggle button {
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mode-toggle button.active {
+            background: linear-gradient(135deg, #64d2ff, #3a7bd5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(100, 210, 255, 0.4);
+        }
+        
+        .mode-toggle button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .function-pad {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+        
+        .function-pad button {
+            position: relative;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(100, 210, 255, 0.1);
+            color: #64d2ff;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .function-pad button:hover {
+            background: rgba(100, 210, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .integration-pad {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+        
+        .integration-pad button {
+            position: relative;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 105, 180, 0.1);
+            color: #ff69b4;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .integration-pad button:hover {
+            background: rgba(255, 105, 180, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        
+        button:hover .tooltip {
+            opacity: 1;
+        }
+        
+        .help-text {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: #ccc;
+            font-size: 0.9em;
+            line-height: 1.4;
+            display: none;
+        }
+        
+        .help-text.visible {
+            display: block;
+        }
+        
+        .help-toggle {
+            margin-top: 10px;
+            text-align: center;
+            color: #64d2ff;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .help-toggle:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-height: 700px) {
+            .calculator {
+                max-height: 80vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="history" id="history"></div>
+        <div class="display" id="display">0</div>
+        
+        <div class="mode-toggle">
+            <button id="basic-mode" class="active">Basic</button>
+            <button id="scientific-mode">Scientific</button>
+            <button id="integration-mode">Integration</button>
+        </div>
+        
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">AC</button>
+            <button class="backspace" onclick="backspace()">⌫</button>
+            <button class="operator" onclick="appendToDisplay('%')">%</button>
+            <button class="operator" onclick="appendToDisplay('/')">/</button>
+            
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button class="operator" onclick="appendToDisplay('**')">^</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+        
+        <div class="function-pad hidden" id="scientific-pad">
+            <button class="function" onclick="calculateFunction('sin')">
+                sin
+                <span class="tooltip">Sine (degrees)</span>
+            </button>
+            <button class="function" onclick="calculateFunction('cos')">
+                cos
+                <span class="tooltip">Cosine (degrees)</span>
+            </button>
+            <button class="function" onclick="calculateFunction('tan')">
+                tan
+                <span class="tooltip">Tangent (degrees)</span>
+            </button>
+            <button class="function" onclick="calculateFunction('asin')">
+                asin
+                <span class="tooltip">Arc sine (returns degrees)</span>
+            </button>
+            
+            <button class="function" onclick="calculateFunction('acos')">
+                acos
+                <span class="tooltip">Arc cosine (returns degrees)</span>
+            </button>
+            <button class="function" onclick="calculateFunction('atan')">
+                atan
+                <span class="tooltip">Arc tangent (returns degrees)</span>
+            </button>
+            <button class="function" onclick="calculateFunction('log')">
+                log
+                <span class="tooltip">Logarithm base 10</span>
+            </button>
+            <button class="function" onclick="calculateFunction('ln')">
+                ln
+                <span class="tooltip">Natural logarithm</span>
+            </button>
+            
+            <button class="function" onclick="appendToDisplay('Math.PI')">
+                π
+                <span class="tooltip">Pi constant (3.14159...)</span>
+            </button>
+            <button class="function" onclick="appendToDisplay('Math.E')">
+                e
+                <span class="tooltip">Euler's number (2.71828...)</span>
+            </button>
+            <button class="function" onclick="calculateFunction('sqrt')">
+                √x
+                <span class="tooltip">Square root</span>
+            </button>
+            <button class="function" onclick="calculateFunction('cbrt')">
+                ∛x
+                <span class="tooltip">Cube root</span>
+            </button>
+            
+            <button class="function" onclick="appendToDisplay('(')">
+                (
+                <span class="tooltip">Open parenthesis</span>
+            </button>
+            <button class="function" onclick="appendToDisplay(')')">
+                )
+                <span class="tooltip">Close parenthesis</span>
+            </button>
+            <button class="function" onclick="calculateFunction('abs')">
+                |x|
+                <span class="tooltip">Absolute value</span>
+            </button>
+            <button class="function" onclick="calculateFactorial()">
+                n!
+                <span class="tooltip">Factorial</span>
+            </button>
+            
+            <button class="function" onclick="calculateFunction('exp')">
+                exp
+                <span class="tooltip">e^x (exponential)</span>
+            </button>
+            <button class="function" onclick="calculatePower(2)">
+                x²
+                <span class="tooltip">Square</span>
+            </button>
+            <button class="function" onclick="calculatePower(3)">
+                x³
+                <span class="tooltip">Cube</span>
+            </button>
+            <button class="function" onclick="calculateFunction('reciprocal')">
+                1/x
+                <span class="tooltip">Reciprocal</span>
+            </button>
+        </div>
+        
+        <div class="integration-pad hidden" id="integration-pad">
+            <button class="function" onclick="setIntegrationVar('x')">
+                x
+                <span class="tooltip">Use x as variable</span>
+            </button>
+            <button class="function" onclick="setIntegrationVar('y')">
+                y
+                <span class="tooltip">Use y as variable</span>
+            </button>
+            <button class="function" onclick="setIntegrationVar('z')">
+                z
+                <span class="tooltip">Use z as variable</span>
+            </button>
+            <button class="function" onclick="appendToDisplay('dx')">
+                dx
+                <span class="tooltip">Differential of x</span>
+            </button>
+            
+            <button class="function" onclick="appendToDisplay('∫')">
+                ∫
+                <span class="tooltip">Integration symbol</span>
+            </button>
+            <button class="function" onclick="setIntegrationLimits('lower')">
+                Lower
+                <span class="tooltip">Set lower bound</span>
+            </button>
+            <button class="function" onclick="setIntegrationLimits('upper')">
+                Upper
+                <span class="tooltip">Set upper bound</span>
+            </button>
+            <button class="function" onclick="performIntegration()">
+                Solve
+                <span class="tooltip">Calculate the integral</span>
+            </button>
+            
+            <button class="function" onclick="appendToDisplay('sin(')">
+                sin
+                <span class="tooltip">Sine function</span>
+            </button>
+            <button class="function" onclick="appendToDisplay('cos(')">
+                cos
+                <span class="tooltip">Cosine function</span>
+            </button>
+            <button class="function" onclick="appendToDisplay('tan(')">
+                tan
+                <span class="tooltip">Tangent function</span>
+            </button>
+            <button class="function" onclick="appendToDisplay('e^')">
+                e^x
+                <span class="tooltip">Exponential function</span>
+            </button>
+        </div>
+        
+        <div class="help-toggle" onclick="toggleHelp()">Show Help</div>
+        
+        <div class="help-text" id="help-text">
+            <h3>Calculator Instructions:</h3>
+            <p><strong>Basic Mode:</strong> Standard arithmetic operations.</p>
+            <p><strong>Scientific Mode:</strong> Advanced functions including:</p>
+            <ul>
+                <li>Trigonometric functions (sin, cos, tan)</li>
+                <li>Inverse trigonometric functions (asin, acos, atan)</li>
+                <li>Logarithms (log, ln)</li>
+                <li>Square root (√x) and cube root (∛x)</li>
+                <li>Powers (x², x³)</li>
+                <li>Constants (π, e)</li>
+                <li>Factorial (n!)</li>
+            </ul>
+            <p><strong>Integration Mode:</strong> Numerical integration using the trapezoidal rule.</p>
+            <p>To use integration:</p>
+            <ol>
+                <li>Enter your function with a variable (x, y, or z)</li>
+                <li>Set upper and lower bounds</li>
+                <li>Click "Solve" to calculate the integral</li>
+            </ol>
+            <p>Hover over any button to see a tooltip explaining its function.</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const display = document.getElementById('display');
+        const history = document.getElementById('history');
+        const basicMode = document.getElementById('basic-mode');
+        const scientificMode = document.getElementById('scientific-mode');
+        const integrationMode = document.getElementById('integration-mode');
+        const scientificPad = document.getElementById('scientific-pad');
+        const integrationPad = document.getElementById('integration-pad');
+        const helpText = document.getElementById('help-text');
+        
+        // Calculator state
+        let currentInput = '0';
+        let calculationHistory = '';
+        let integrationVar = 'x';
+        let integrationLowerLimit = null;
+        let integrationUpperLimit = null;
+        let integrationExpression = '';
+        
+        // Mode switching
+        basicMode.addEventListener('click', () => {
+            basicMode.classList.add('active');
+            scientificMode.classList.remove('active');
+            integrationMode.classList.remove('active');
+            scientificPad.classList.add('hidden');
+            integrationPad.classList.add('hidden');
+        });
+        
+        scientificMode.addEventListener('click', () => {
+            basicMode.classList.remove('active');
+            scientificMode.classList.add('active');
+            integrationMode.classList.remove('active');
+            scientificPad.classList.remove('hidden');
+            integrationPad.classList.add('hidden');
+        });
+        
+        integrationMode.addEventListener('click', () => {
+            basicMode.classList.remove('active');
+            scientificMode.classList.remove('active');
+            integrationMode.classList.add('active');
+            scientificPad.classList.add('hidden');
+            integrationPad.classList.remove('hidden');
+        });
+        
+        // Toggle help text
+        function toggleHelp() {
+            helpText.classList.toggle('visible');
+            const helpToggle = document.querySelector('.help-toggle');
+            helpToggle.textContent = helpText.classList.contains('visible') ? 'Hide Help' : 'Show Help';
+        }
+        
+        // Basic calculator functions
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+        
+        function appendToDisplay(value) {
+            if (currentInput === '0' && value !== '.') {
+                currentInput = value;
+            } else {
+                currentInput += value;
+            }
+            updateDisplay();
+        }
+        
+        function clearDisplay() {
+            currentInput = '0';
+            updateDisplay();
+        }
+        
+        function backspace() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+        
+        function calculate() {
+            try {
+                // Save the expression to history
+                calculationHistory = currentInput;
+                history.textContent = calculationHistory;
+                
+                // Replace UI symbols with JavaScript operators
+                let expression = currentInput
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/π/g, 'Math.PI')
+                    .replace(/√(\d+)/g, 'Math.sqrt($1)');
+                
+                // Evaluate the expression
+                const result = eval(expression);
+                currentInput = result.toString();
+                updateDisplay();
+            } catch (error) {
+                currentInput = 'Error';
+                updateDisplay();
+                setTimeout(clearDisplay, 1500);
+            }
+        }
+        
+        // Scientific calculator functions
+        function calculateFunction(func) {
+            try {
+                let value = parseFloat(currentInput);
+                let result;
+                
+                switch (func) {
+                    case 'sin':
+                        result = Math.sin(value * (Math.PI / 180)); // Convert to radians
+                        break;
+                    case 'cos':
+                        result = Math.cos(value * (Math.PI / 180));
+                        break;
+                    case 'tan':
+                        result = Math.tan(value * (Math.PI / 180));
+                        break;
+                    case 'asin':
+                        result = Math.asin(value) * (180 / Math.PI); // Convert to degrees
+                        break;
+                    case 'acos':
+                        result = Math.acos(value) * (180 / Math.PI);
+                        break;
+                    case 'atan':
+                        result = Math.atan(value) * (180 / Math.PI);
+                        break;
+                    case 'log':
+                        result = Math.log10(value);
+                        break;
+                    case 'ln':
+                        result = Math.log(value);
+                        break;
+                    case 'sqrt':
+                        result = Math.sqrt(value);
+                        break;
+                    case 'cbrt':
+                        result = Math.cbrt(value);
+                        break;
+                    case 'abs':
+                        result = Math.abs(value);
+                        break;
+                    case 'exp':
+                        result = Math.exp(value);
+                        break;
+                    case 'reciprocal':
+                        result = 1 / value;
+                        break;
+                    default:
+                        throw new Error('Unknown function');
+                }
+                
+                // Save the expression to history
+                calculationHistory = `${func}(${currentInput})`;
+                history.textContent = calculationHistory;
+                
+                currentInput = result.toString();
+                updateDisplay();
+            } catch (error) {
+                currentInput = 'Error';
+                updateDisplay();
+                setTimeout(clearDisplay, 1500);
+            }
+        }
+        
+        function calculateFactorial() {
+            try {
+                const num = parseInt(currentInput);
+                if (num < 0) throw new Error('Cannot calculate factorial of negative number');
+                if (num > 170) throw new Error('Number too large for factorial');
+                
+                // Save the expression to history
+                calculationHistory = `${currentInput}!`;
+                history.textContent = calculationHistory;
+                
+                let result = 1;
+                for (let i = 2; i <= num; i++) {
+                    result *= i;
+                }
+                
+                currentInput = result.toString();
+                updateDisplay();
+            } catch (error) {
+                currentInput = 'Error: ' + error.message;
+                updateDisplay();
+                setTimeout(clearDisplay, 2000);
+            }
+        }
+        
+        function calculatePower(power) {
+            try {
+                const num = parseFloat(currentInput);
+                
+                // Save the expression to history
+                calculationHistory = power === 2 ? `${currentInput}²` : `${currentInput}³`;
+                history.textContent = calculationHistory;
+                
+                const result = Math.pow(num, power);
+                currentInput = result.toString();
+                updateDisplay();
+            } catch (error) {
+                currentInput = 'Error';
+                updateDisplay();
+                setTimeout(clearDisplay, 1500);
+            }
+        }
+        
+        // Integration functions
+        function setIntegrationVar(variable) {
+            integrationVar = variable;
+            appendToDisplay(variable);
+        }
+        
+        function setIntegrationLimits(type) {
+            if (type === 'lower') {
+                integrationLowerLimit = parseFloat(prompt('Enter lower limit:', '0'));
+                history.textContent = `Lower limit: ${integrationLowerLimit}`;
+            } else {
+                integrationUpperLimit = parseFloat(prompt('Enter upper limit:', '1'));
+                history.textContent = `Upper limit: ${integrationUpperLimit}`;
+            }
+        }
+        
+        function performIntegration() {
+            try {
+                if (integrationLowerLimit === null || integrationUpperLimit === null) {
+                    throw new Error('Please set integration limits');
+                }
+                
+                // Get the expression to integrate
+                integrationExpression = currentInput;
+                
+                // Simple numerical integration using trapezoidal rule
+                const n = 1000; // Number of intervals
+                const h = (integrationUpperLimit - integrationLowerLimit) / n;
+                let sum = 0;
+                
+                // Function to evaluate the expression at a given value of the integration variable
+                function evaluateAt(x) {
+                    // Replace the integration variable with the actual value
+                    const expr = integrationExpression.replace(new RegExp(integrationVar, 'g'), x);
+                    return eval(expr);
+                }
+                
+                // Trapezoidal rule: ∫f(x)dx ≈ h/2 * [f(a) + 2f(a+h) + 2f(a+2h) + ... + 2f(b-h) + f(b)]
+                sum += evaluateAt(integrationLowerLimit);
+                
+                for (let i = 1; i < n; i++) {
+                    const x = integrationLowerLimit + i * h;
+                    sum += 2 * evaluateAt(x);
+                }
+                
+                sum += evaluateAt(integrationUpperLimit);
+                sum *= h / 2;
+                
+                // Save the expression to history
+                calculationHistory = `∫(${integrationExpression}) from ${integrationLowerLimit} to ${integrationUpperLimit}`;
+                history.textContent = calculationHistory;
+                
+                currentInput = sum.toString();
+                updateDisplay();
+            } catch (error) {
+                currentInput = 'Error: ' + error.message;
+                updateDisplay();
+                setTimeout(() => {
+                    currentInput = '0';
+                    updateDisplay();
+                }, 3000);
+            }
+        }
+        
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
